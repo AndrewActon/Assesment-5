@@ -26,7 +26,7 @@ module.exports = {
             city_id SERIAL PRIMARY KEY,
             name VARCHAR,
             rating INTEGER,
-            country_id INTEGER
+            country_Id INTEGER
            );
 
             insert into countries (name)
@@ -229,11 +229,40 @@ module.exports = {
             console.log('DB seeded!')
             res.sendStatus(200)
         }).catch(err => console.log('error seeding DB', err))
-    }
+    },
 
-    // getCountries: (req, res) => {
-    //     sequelize.query(`
-    //         SELECT * FROM countires
-    //     `).then(dbRes => res.status(200).send(dbRes[0])).catch((err) => console.log(err))
-    // }
+    getCountries: (req, res) => {
+        sequelize.query(`
+            SELECT * FROM countries
+        `).then(dbRes => res.status(200).send(dbRes[0]))
+        .catch((err) => console.log(err))
+    },
+
+    createCity: (req, res) => {
+        const {name, rating, countryId} = req.body
+        sequelize.query(`
+            INSERT INTO cities (name, rating, country_Id)
+            VALUES ('${name}', ${rating}, ${countryId})
+            RETURNING *;
+        `).then(dbRes => res.status(200).send(dbRes[0])).catch((err) => console.log(err))
+    },
+
+    getCities: (req, res) => {
+        sequelize.query(`
+        SELECT cities.city_id, cities.name AS city, cities.rating, countries.country_id, countries.name AS country 
+        FROM cities
+        JOIN countries
+        ON cities.country_id = countries.country_id
+        `).then(dbRes => res.status(200).send(dbRes[0])).catch((err) => console.log(err))
+    },
+
+    deleteCity: (req, res) => {
+        const {id} = req.params
+        console.log(id)
+        sequelize.query(`
+            DELETE
+            FROM cities
+            WHERE city_id = ${id}
+        `).then(dbRes => res.status(200).send(dbRes[0])).catch((err) => console.log(err))
+    }
 }
